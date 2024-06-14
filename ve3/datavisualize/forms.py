@@ -1,7 +1,4 @@
 from django import forms
-import pandas as pd
-import os
-from pathlib import Path
 
 
 class UploadCSVForm(forms.Form):
@@ -10,6 +7,9 @@ class UploadCSVForm(forms.Form):
         'id': 'customFile',
     }))
 
+
+
+'''
 class Plots(forms.Form):
 
     def set_column_choices(self):
@@ -49,3 +49,4 @@ class Plots(forms.Form):
         super().__init__(*args, **kwargs)
         self.fields['x'].choices = column_choices
         self.fields['y'].choices = column_choices
+'''

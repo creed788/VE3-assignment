@@ -1,25 +1,24 @@
-from django.shortcuts import render, redirect, get_object_or_404
+import os
+import re
+import io
+import base64
+from pathlib import Path
+from django.shortcuts import render
 from django.views import View
 import matplotlib
 matplotlib.use('Agg')
 from matplotlib.backends.backend_agg import FigureCanvasAgg as FigureCanvas
 import pandas as pd
 from .forms import UploadCSVForm
-from .forms import Plots
-# from .models import CSVData
+# from .forms import Plots
 from django.core.files.storage import FileSystemStorage
 from django.conf import settings
 import matplotlib.pyplot as plt
 import seaborn as sns
-import os
-import re
-import io
-import base64
-from pathlib import Path
 
 
-def sanitize_filename(filename):
-    """Remove or replace special characters in filenames."""
+
+def clean_filename(filename):
     return re.sub(r'[^\w\s-]', '', filename).replace(' ', '_')
 
 
@@ -51,8 +50,8 @@ def upload_csv(request):
             # Generate Histogram
             histograms = []
             for column in df.select_dtypes(include=['float64', 'int64']).columns:
-                sanitized_column = sanitize_filename(column)
-                plot_path = os.path.join(settings.MEDIA_ROOT, f'{sanitized_column}_hist.png')
+                clean_column = clean_filename(column)
+                plot_path = os.path.join(settings.MEDIA_ROOT, f'{clean_column}_hist.png')
                 
                 # Ensure the directory exists
                 os.makedirs(os.path.dirname(plot_path), exist_ok=True)
@@ -60,7 +59,7 @@ def upload_csv(request):
                 plt.figure()
                 sns.histplot(df[column].dropna(), kde=False)
                 plt.savefig(plot_path)
-                histograms.append(f'{sanitized_column}_hist.png')
+                histograms.append(f'{clean_column}_hist.png')
                 plt.close()   
 
             return render(request, 'csvapp/results.html', {
@@ -75,13 +74,8 @@ def upload_csv(request):
         form = UploadCSVForm()
     return render(request, 'csvapp/upload_csv.html', {'form': form})
 
-  # def get(self, request, csv_data_id):
-    #     csv_data = get_object_or_404(CSVData, id=csv_data_id)
-    #     df = pd.DataFrame(csv_data.data)
-    #     column_choices = [(col, col) for col in df.columns]
-    #     form = Plots(column_choices=column_choices)
-    #     return render(request, self.template_name, {'form': form, 'csv_data_id': csv_data_id})
 
+'''
 class PlotView(View):
     template_name = 'csvapp/plots.html'
     def get(self, request):
@@ -143,44 +137,4 @@ class PlotView(View):
         plt.close(fig)  
         return image_base64
     
-
-
-# def plot_csv_data(request):
-#     directory = 'media/'  # Directory where CSV files are stored
-#     plot = None
-
-#     if request.method == 'POST':
-#         form = Plots(request.POST, directory=directory)
-#         if form.is_valid():
-#             # csv_files = [f for f in os.listdir(directory) if f.endswith('.csv')]
-#             # most_recent_csv = max(csv_files, key=lambda f: os.path.getctime(os.path.join(directory, f)))
-#             # file_path = os.path.join(directory, most_recent_csv)
-            
-#             df = pd.read_csv(file_path)
-#             x_axis = form.cleaned_data.get('scatter_x')
-#             y_axis = form.cleaned_data.get('scatter_y')
-            
-#             plt.figure()
-            
-#             if form.cleaned_data.get('include_scatter') and x_axis and y_axis:
-#                 df.plot.scatter(x=x_axis, y=y_axis)
-                
-#             if form.cleaned_data.get('include_histogram') and x_axis:
-#                 df[x_axis].plot.hist(alpha=0.5)
-                
-#             if form.cleaned_data.get('include_box') and x_axis:
-#                 df.boxplot(column=[x_axis])
-            
-#             buf = io.BytesIO()
-#             plt.savefig(buf, format='png')
-#             buf.seek(0)
-#             plot = base64.b64encode(buf.getvalue()).decode('utf-8')
-#             plt.close()
-#     else:
-#         form = Plots(directory=directory)
-
-#     return render(request, 'template.html', {'form': form, 'plot': plot})
-
-
-
-           
+'''
